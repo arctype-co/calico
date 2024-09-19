@@ -432,9 +432,17 @@ func cmdAdd(args *skel.CmdArgs) (err error) {
 
 		logger.WithField("endpoint", endpoint).Info("Wrote endpoint to datastore")
 
-		// Add the interface created above to the CNI result.
-		result.Interfaces = append(result.Interfaces, &current.Interface{
-			Name: endpoint.Spec.InterfaceName},
+		netns := os.Getenv("CNI_NETNS")
+		// Add the host interface created above to the CNI result.
+		result.Interfaces = append(result.Interfaces,
+			// Host interface
+			&current.Interface{
+				Name: endpoint.Spec.InterfaceName,
+			},
+			// Container interface
+			&current.Interface{
+				Name: endpoint.Spec.Endpoint, Sandbox: netns,
+			},
 		)
 	}
 
